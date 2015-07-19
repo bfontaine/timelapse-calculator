@@ -1,54 +1,43 @@
 /*jslint esnext:true*/
-let React = require("react/addons");
+let b = require("./b").b;
 
-var TimelapseCalculator = React.createClass({
-  mixins: [React.addons.LinkedStateMixin],
-  getInitialState: () => ({
-    wait_hh: 0,
-    wait_mm: 0,
-    wait_ss: 0,
-
-    /*
-    interval: new time.Interval(),
-    fps: {value: 0},
-    real_duration_1s: new time.Duration(),
-    total_images: {value: 0},
-    final_duration: new time.Duration(0, 0, 30),
-    final_real_duration: new time.Duration(0, 0, 0),
-    img_size: new FileSize(0),
-    final_size: new FileSize(0),
-*/
-  }),
-
-  // WIP
-  render: function() {
-    return (
-    <div class="calculator">
+/*
       <p>
-        Waiting <input type="number" class="duration duration-hh"
-                       valueLink={this.linkState("wait_hh")} /> hours,
-                <input type="number" class="duration duration-mm"
-                       valueLink={this.linkState("wait_mm")} /> minutes,
-                <input type="number" class="duration duration-ss"
-                       valueLink={this.linkState("wait_ss")} /> seconds
+        Waiting
+        <input type="time" max="99:59:59" min="00:00:01" data-b="wait"/>
         between each image means:
       </p>
       <ul>
         <li>
-          One second of video at <input type="number" class="fps"
-                                        valueLink={this.linkState("fps")} />
+          One second of video at
+          <input type="number" data-b="fps">
           fps will represent
-            <input type="number" class="duration duration-hh"
-                   valueLink={this.linkState("equiv1sec_hh")} /> hours,
-            <input type="number" class="duration duration-mm"
-                   valueLink={this.linkState("equiv1sec_mm")} /> minutes,
-            <input type="number" class="duration duration-ss"
-                   valueLink={this.linkState("equiv1sec_ss")} /> seconds.
+          <input type="time" data-b="repr" />.
+        </li>
+
+        <li>
+          <input type="time" min="00:00:01" value="00:00:30" data-b="final"/>
+          of video will need
+          <input type="number" data-b="imgs"/>
+          images and represent
+          <input type="time" min="00:00:01" data-b="finalrepr"/>.<br/>
+          Assuming an image is
+          <input type="number" data-b="imgsize">&nbsp;MB
+          that’ll take
+          <input type="number" data-b="finalsize"/>&nbsp;MB.
         </li>
       </ul>
-    </div>
-    )
-  }
-});
+*/
 
-React.render(<TimelapseCalculator/>, document.getElementById("app"));
+
+
+b.bind("repr", ["wait", "fps"], (wait, fps) => fps / wait);
+b.bind("fps", ["wait", "repr"], (wait, repr) => repr / wait);
+
+b.bind("imgs", ["final", "fps", "wait"], (finl, fps) => finl * fps);
+
+b.bind("final", ["imgs", "fps", "wait"], (imgs, fps) => imgs / fps);
+
+b.bind("finalsize", ["imgs", "imgsize"], (n, s) => n * s);
+
+b.done();

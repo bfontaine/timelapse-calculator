@@ -4,7 +4,6 @@ var gulp = require("gulp"),
     source = require("vinyl-source-stream"),
     browserify = require("browserify"),
     watchify = require("watchify"),
-    reactify = require("reactify"),
     streamify = require("gulp-streamify"),
     babelify = require("babelify");
 

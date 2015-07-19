@@ -6,7 +6,33 @@
   </head>
   <body>
     <h1>Timelapse Calculator</h1>
-    <div id="app"></div>
+    <div id="app">
+      <p>
+        Waiting
+        <input type="time" max="99:59:59" min="00:00:01" data-b="wait"/>
+        between each image means:
+      </p>
+      <ul>
+        <li>
+          One second of video at
+          <input type="number" data-b="fps">
+          fps will represent
+          <input type="time" data-b="repr" />.
+        </li>
+
+        <li>
+          <input type="time" min="00:00:01" value="00:00:30" data-b="final"/>
+          of video will need
+          <input type="number" data-b="imgs"/>
+          images and represents
+          <input type="time" min="00:00:01" data-b="finalrepr"/>.<br/>
+          Assuming an image is
+          <input type="number" data-b="imgsize"/>&nbsp;MB
+          that’ll take
+          <input type="number" data-b="finalsize" readonly="readonly"/>&nbsp;MB.
+        </li>
+      </ul>
+    </div>
 
     <!-- build:js -->
     <script src="/dist/src/tc.js"></script>
