@@ -1,24 +1,23 @@
 var gulp = require("gulp"),
-    concat = require("gulp-concat"),
     uglify = require("gulp-uglify"),
-    react = require("gulp-react"),
-    htmlreplace = require("gulp-html-replace");
+    htmlreplace = require("gulp-html-replace"),
+    source = require("vinyl-source-stream"),
+    browserify = require("browserify"),
+    watchify = require("watchify"),
+    reactify = require("reactify"),
+    streamify = require("gulp-streamify"),
+    babelify = require("babelify");
+
 
 var path = {
   HTML: "src/index.html",
-  JS: ["src/js/*.js", "src/**/*.js"],
-  ALL: ["src/js/*.js", "src/js/**/*.js", "src/index.html"],
-  DEST_MIN: "tc.min.js",
-  DEST_SRC: "dist/src",
+  JSMIN: "tc.min.js",
+  JS: "tc.js",
+  DEST: "dist",
   DEST_BUILD: "dist/build",
-  DEST: "dist"
+  DEST_SRC: "dist/src",
+  ENTRY_POINT: "./src/js/app.js"
 };
-
-gulp.task("transform", function() {
-  gulp.src(path.JS)
-      .pipe(react())
-      .pipe(gulp.dest(path.DEST_SRC));
-});
 
 gulp.task("copy", function() {
   gulp.src(path.HTML)
@@ -26,21 +25,44 @@ gulp.task("copy", function() {
 });
 
 gulp.task("watch", function() {
-  gulp.watch(path.ALL, ["transform", "copy"]);
+  gulp.watch(path.HTML, ["copy"]);
+
+  var w = watchify(browserify({
+    entries: [path.ENTRY_POINT],
+    transform: [babelify],
+    debug: true,
+    cache: {},
+    packageCache: {},
+    fullPaths: true
+  }));
+
+  w.on("update", function() {
+    w
+     .bundle()
+     .pipe(source(path.JS))
+     .pipe(gulp.dest(path.DEST_SRC));
+    console.log("Updated.");
+  })
+    .bundle()
+    .pipe(source(path.JS))
+    .pipe(gulp.dest(path.DEST_SRC));
 });
 
 gulp.task("build", function() {
-  gulp.src(path.JS)
-      .pipe(react())
-      .pipe(concat(path.DEST_MIN))
-      .pipe(uglify(path.DEST_MIN))
-      .pipe(gulp.dest(path.DEST_BUILD));
+  browserify({
+    entries: [path.ENTRY_POINT],
+    transform: [babelify]
+  })
+    .bundle()
+    .pipe(source(path.JSMIN))
+    .pipe(streamify(uglify(path.JSMIN)))
+    .pipe(gulp.dest(path.DEST_BUILD));
 });
 
 gulp.task("replaceHTML", function() {
   gulp.src(path.HTML)
       .pipe(htmlreplace({
-        "js": "build/" + path.DEST_MIN
+        "js": "build/" + path.JSMIN
       }))
       .pipe(gulp.dest(path.DEST));
 });
