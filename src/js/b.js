@@ -5,13 +5,18 @@ class B {
     this.deps = {}; // dependencies
     this.revdeps = {}; // dependencees
     this.fns = {};
+
+    this._digest = {};
   }
 
   _get(name) {
     let el = this.elements[name];
     if (!el) {
+      console.log("unknown", name);
       return 0;
     }
+
+    console.log("get", name, el.value);
 
     if (el.type == "time") {
       let [h, m, s] = el.value.split(":");
@@ -19,13 +24,16 @@ class B {
         // XXX shouldn't happen
         return 1;
       }
+      console.log("-->", 3600*parseInt(h, 10) + 60*parseInt(m, 10) + parseInt(s, 10));
       return 3600*parseInt(h, 10) + 60*parseInt(m, 10) + parseInt(s, 10);
     }
 
+    console.log("-->", +el.value);
     return +el.value;
   }
 
   _set(name, v) {
+    console.log("set", name, v);
     let el = this.elements[name];
     if (!el) {
       return;
@@ -48,24 +56,40 @@ class B {
   }
 
   _recompute(name, n) {
-    if (n > 1000) {
+    if (this._digest[name]) {
+      console.log(`not recomputing ${name}, already done`);
+      return;
+    }
+
+    console.log("recompute", name, "<=", this.deps[name]);
+    if (n > 10) {
       throw `max recomputations number exhausted on ${name}`;
     }
 
     let deps = this.deps[name] || [];
     let vals = deps.map((d) => this._get(d));
-    let newval = this.fns[name](vals);
+    let newval = this.fns[name].apply(null, vals);
     let before = this._get(name);
 
+    this._digest[name] = true;
+
     if (before != newval) {
-      this._set(name, this.fns[name](vals));
+      this._set(name, newval);
       this._changed(name, n+1);
     }
   }
 
   _changed(name, n) {
+    console.log("changed", name, "=>", this.revdeps[name]);
     let revdeps = this.revdeps[name] || [];
     revdeps.forEach((rd) => this._recompute(rd, n));
+  }
+
+  digest(name) {
+    this._digest = {};
+    this._digest[name] = true;
+    this._changed(name, 0);
+    this._digest = {};
   }
 
   bind(binded, deps, fn) {
@@ -82,13 +106,16 @@ class B {
   }
 
   done() {
+    let t = this;
+
     [].forEach.call(document.querySelectorAll("[data-b]"), (el) => {
       let name = el.getAttribute("data-b");
       this.elements[name] = el;
 
-      el.addEventListener("change", () => {
-        this._changed(name, 0);
-      }, false);
+      el.addEventListener("change",
+        (e) => setTimeout(() => t.digest(name), 0),
+        false
+      );
     });
   }
 }

@@ -29,14 +29,19 @@ let b = require("./b").b;
       </ul>
 */
 
+// hack
+[].forEach.call(document.getElementsByTagName("input"), (el) => {
+      if (el.type == "time" && el.value === "") {
+        el.value = "00:00:01";
+      }
+});
 
 
 b.bind("repr", ["wait", "fps"], (wait, fps) => fps / wait);
-b.bind("fps", ["wait", "repr"], (wait, repr) => repr / wait);
 
-b.bind("imgs", ["final", "fps", "wait"], (finl, fps) => finl * fps);
+b.bind("imgs", ["final", "fps", "wait"], (finl, fps, wait) => finl * fps);
 
-b.bind("final", ["imgs", "fps", "wait"], (imgs, fps) => imgs / fps);
+b.bind("final", ["imgs", "fps"], (imgs, fps) => imgs / (fps || 1));
 
 b.bind("finalsize", ["imgs", "imgsize"], (n, s) => n * s);
 
