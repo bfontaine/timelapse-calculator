@@ -9,27 +9,24 @@
     <div id="app">
       <p>
         Waiting
-        <input type="time" max="99:59:59" data-b="wait"/>
+        <input type="time" max="99:59:59" data-b="wait" />
         between each image means:
       </p>
       <ul>
         <li>
           One second of video at
-          <input type="number" data-b="fps" value="24"/>
+          <input type="number" data-b="fps" readonly="readonly"/>
           fps will represent
-          <input type="time" data-b="repr" />.
+          <input type="time" data-b="repr" readonly="readonly" />.
         </li>
 
         <li>
-          <input type="time" min="00:00:01" value="00:00:30" data-b="final"/>
+          <input type="time" value="00:00:30" data-b="final"
+                 readonly="readonly" />
           of video will need
-          <input type="number" data-b="imgs"/>
+          <input type="number" data-b="imgs" readonly="readonly"/>
           images and represents
-          <input type="time" min="00:00:01" data-b="finalrepr"/>.<br/>
-          Assuming an image is
-          <input type="number" data-b="imgsize"/>&nbsp;MB
-          that’ll take
-          <input type="number" data-b="finalsize" readonly="readonly"/>&nbsp;MB.
+          <input type="time" data-b="finalrepr" readonly="readonly"/>.
         </li>
       </ul>
     </div>
