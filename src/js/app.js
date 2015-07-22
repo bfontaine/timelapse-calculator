@@ -1,121 +1,115 @@
 /*jslint esnext:true*/
-class View {
-  constructor(prefix) {
-    this.els = {};
-    this.listeners = [];
-    [].forEach.call(document.querySelectorAll(`[data-${prefix}]`), (e) => {
-      let name = e.getAttribute(`data-${prefix}`);
-      this.els[name] = e;
-      e.addEventListener("change", (ev) => {
-        this._onchange(name, e, ev);
-      }, false);
-    });
+
+class State {
+  constructor() {
+    this.vals = {};
   }
 
-  apply(vals) {
-    for (let k in vals) {
-      let e = this.els[k];
-      if (e) {
-        e.value = vals[k];
-      }
-    }
+  set(k, v) {
+    this.vals[k] = v;
   }
 
-  _onchange(name, e, ev) {
-    this.listeners.forEach((l) => {
-      l.call(v, name, e.value);
-    });
+  get(k) {
+    return this.vals[k];
   }
 
-  onchange(callback) {
-    this.listeners.push(callback);
+  getAll() {
+    return this.vals;
+  }
+
+  refresh() {
+    this.set("repr", this.get("fps") * this.get("wait"));
+    this.set("imgs", this.get("fps") * 30);
+    this.set("finalrepr", this.get("repr") * 30);
   }
 }
 
-class Model {
-  constructor(d) {
-    this.vals = d;
-    this.bindings = {};
+class View {
+  constructor(prefix="b") {
+    this.els = {};
+
+    [].forEach.call(document.querySelectorAll(`[data-${prefix}]`), (e) => {
+      this.els[e.getAttribute(`data-${prefix}`)] = e;
+    });
   }
 
-  set(name, v) {
-    this.vals[name] = v;
-    this._refresh(name);
-  }
+  update(vals) {
+    for (let k in vals) {
+      if (!vals.hasOwnProperty(k)) { continue; }
+      let el = this.els[k];
+      if (!el) { continue; }
+      let v = vals[k];
 
-  bind(name, deps, fn) {
-    this.bindings[name] = [deps, fn];
-  }
+      if (el.type == "time") {
+        let h, m, s, t;
+        s = v%60;
+        m = (0|v/60)%60;
+        h = (0|v/3600);
 
-  _refresh(name) {
-    // not optimized for now
-    for (let k in this.bindings) {
-      let [deps, fn] = this.bindings[k];
-      if (deps.indexOf(name) == -1) { return; }
+        t  = (h < 10 ? "0" : "") + h + ":";
+        t += (m < 10 ? "0" : "") + m + ":";
+        t += (s < 10 ? "0" : "") + s;
+        v = t;
+      }
 
-      this.vals[k] = fn.apply(null, deps.map(d => this.vals[d]));
+      el.value = v;
     }
+  }
+
+  get(k) {
+    let el = this.els[k];
+    if (!el) { return 0; }
+
+    let v = el.value;
+
+    if (el.type == "time") {
+      let [h, m, s] = v.split(":");
+      v = parseInt(h, 10) * 3600 + parseInt(m, 10) * 60;
+
+      if (s > 0) {
+        v += s;
+      }
+    }
+
+    return +v;
   }
 }
 
 class Controller {
-  constructor(m, v) {
-    this.model = m;
-    this.view = v;
-
-    this.view.onchange((n, v) => this.onchange(n, v));
+  constructor(viewPrefix="b") {
+    this.state = new State();
+    this.view = new View(viewPrefix);
   }
 
-  onchange(name, value) {
-    this.model.set(name, value);
-    this.refresh();
+  read(k) {
+    this.state.set(k, this.view.get(k));
   }
 
-  refresh() {
-    this.view.apply(this.model.vals);
+  update() {
+    this.state.refresh();
+    this.view.update(this.state.getAll());
   }
 }
 
-function time2number(t) {
-  let [h, m, s] = t.split(":");
-  let n = parseInt(h, 10) * 3600 + parseInt(m, 10) * 60;
+let c = new Controller("b");
 
-  if (s > 0) {
-    n += s;
-  }
+c.state.set("wait", 15);
+c.state.set("fps", 24);
+c.update();
 
-  return n;
+function listenForChange(el, callback) {
+  el.addEventListener("change", callback, false);
+  // add other events here
 }
 
-function number2time(n) {
-  let h, m, s, t;
-  s = n%60;
-  m = (0|n/60)%60;
-  h = (0|n/3600);
+listenForChange(document.getElementById("wait"), () => {
+  c.read("wait");
+  c.update();
+});
 
-  t  = (h < 10 ? "0" : "") + h + ":";
-  t += (m < 10 ? "0" : "") + m + ":";
-  t += (s < 10 ? "0" : "") + s;
-  return t;
-}
+listenForChange(document.getElementById("fps"), () => {
+  c.read("fps");
+  c.update();
+});
 
-let m = new Model({
-      wait: "00:00:15",
-      fps: 24,
-      "final": "00:00:30",
-    }),
-    v = new View("b"),
-    c = new Controller(m, v);
-
-m.bind("repr", ["wait", "fps"], (wait, fps) =>
-  number2time(time2number(wait) * fps));
-
-m.bind("finalrepr", ["repr", "final"], (repr, finl) =>
-  number2time(time2number(finl) * repr));
-
-/*
-m.bind("imgs", ["final", "fps"], (finl, fps) =>
-  number2time(time2number(finl) * fps));
-*/
-
-c.refresh();
+window.c = c;

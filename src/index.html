@@ -9,21 +9,19 @@
     <div id="app">
       <p>
         Waiting
-        <input type="time" max="99:59:59" data-b="wait" />
+        <input type="time" max="99:59:59" data-b="wait" id="wait" />
         between each image means:
       </p>
       <ul>
         <li>
           One second of video at
-          <input type="number" data-b="fps" readonly="readonly"/>
+          <input type="number" data-b="fps" min="1" id="fps" />
           fps will represent
           <input type="time" data-b="repr" readonly="readonly" />.
         </li>
 
         <li>
-          <input type="time" value="00:00:30" data-b="final"
-                 readonly="readonly" />
-          of video will need
+          30 seconds of video will need
           <input type="number" data-b="imgs" readonly="readonly"/>
           images and represents
           <input type="time" data-b="finalrepr" readonly="readonly"/>.
