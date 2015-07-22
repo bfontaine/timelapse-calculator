@@ -26,10 +26,11 @@ class State {
 
 class View {
   constructor(prefix="b") {
+    let attr = `data-${prefix}`;
     this.els = {};
 
-    [].forEach.call(document.querySelectorAll(`[data-${prefix}]`), (e) => {
-      this.els[e.getAttribute(`data-${prefix}`)] = e;
+    [].forEach.call(document.querySelectorAll(`[${attr}]`), (e) => {
+      this.els[e.getAttribute(attr)] = e;
     });
   }
 
@@ -85,31 +86,24 @@ class Controller {
     this.state.set(k, this.view.get(k));
   }
 
-  update() {
+  update(k=null) {
+    if (k) {
+      this.read(k);
+    }
+
     this.state.refresh();
     this.view.update(this.state.getAll());
   }
+
+  init() {
+    this.state.set("wait", 15);
+    this.state.set("fps", 24);
+    this.update();
+    return this;
+  }
 }
 
-let c = new Controller("b");
+let c = new Controller("b").init();
 
-c.state.set("wait", 15);
-c.state.set("fps", 24);
-c.update();
-
-function listenForChange(el, callback) {
-  el.addEventListener("change", callback, false);
-  // add other events here
-}
-
-listenForChange(document.getElementById("wait"), () => {
-  c.read("wait");
-  c.update();
-});
-
-listenForChange(document.getElementById("fps"), () => {
-  c.read("fps");
-  c.update();
-});
-
-window.c = c;
+["wait", "fps"].forEach(k =>
+  document.getElementById(k).addEventListener("change", () => c.update(k), false));
