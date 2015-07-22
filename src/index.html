@@ -10,13 +10,13 @@
       <h1>Timelapse Calculator</h1>
       <p>
         Waiting
-        <input type="time" max="99:59:59" data-b="wait" id="wait" />
-        between each image means:
+        <input type="number" data-b="wait" min="1" max="362399" id="wait" />
+        seconds between each image means:
       </p>
       <ul>
         <li>
           One second of video at
-          <input type="number" data-b="fps" min="1" id="fps" />
+          <input type="number" data-b="fps" min="1" max="1000" id="fps" />
           fps will represent
           <input type="time" data-b="repr" readonly="readonly" />.
         </li>
