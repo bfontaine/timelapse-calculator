@@ -13,4 +13,4 @@ See it in action:
 
     cd dist && python -m SimpleHTTPServer
 
-It’s now live at http://localhost:8000.
+It’s now live at <http://localhost:8000>.
