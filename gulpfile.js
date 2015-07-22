@@ -5,11 +5,13 @@ var gulp = require("gulp"),
     browserify = require("browserify"),
     watchify = require("watchify"),
     streamify = require("gulp-streamify"),
-    babelify = require("babelify");
+    babelify = require("babelify"),
+    sass     = require("gulp-sass");
 
 
 var path = {
   HTML: "src/index.html",
+  SASS_SRC: "src/sass/**/*.scss",
   JSMIN: "tc.min.js",
   JS: "tc.js",
   DEST: "dist",
@@ -18,6 +20,12 @@ var path = {
   ENTRY_POINT: "./src/js/app.js"
 };
 
+gulp.task("style", function() {
+  gulp.src(path.SASS_SRC)
+      .pipe(sass().on("error", sass.logError))
+      .pipe(gulp.dest("./dist/"));
+});
+
 gulp.task("copy", function() {
   gulp.src(path.HTML)
       .pipe(gulp.dest(path.DEST));
@@ -25,6 +33,7 @@ gulp.task("copy", function() {
 
 gulp.task("watch", function() {
   gulp.watch(path.HTML, ["copy"]);
+  gulp.watch(path.SASS_SRC, ["style"]);
 
   var w = watchify(browserify({
     entries: [path.ENTRY_POINT],
@@ -67,4 +76,4 @@ gulp.task("replaceHTML", function() {
 });
 
 gulp.task("default", ["watch"]);
-gulp.task("production", ["replaceHTML", "build"]);
+gulp.task("production", ["replaceHTML", "build", "style"]);
