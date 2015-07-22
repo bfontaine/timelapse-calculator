@@ -11,7 +11,7 @@ var gulp = require("gulp"),
 
 var path = {
   HTML: "src/index.html",
-  SASS_SRC: "src/sass/**/*.scss",
+  SASS_SRC: "src/sass/*.scss",
   JSMIN: "tc.min.js",
   JS: "tc.js",
   DEST: "dist",
@@ -23,7 +23,7 @@ var path = {
 gulp.task("style", function() {
   gulp.src(path.SASS_SRC)
       .pipe(sass().on("error", sass.logError))
-      .pipe(gulp.dest("./dist/"));
+      .pipe(gulp.dest("./dist/build/"));
 });
 
 gulp.task("copy", function() {

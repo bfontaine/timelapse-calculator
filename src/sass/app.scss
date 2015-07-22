@@ -1,0 +1,21 @@
+@import "_bootstrap";
+
+$text: #333;
+
+input {
+  margin: 0;
+  padding: 0;
+
+  outline: none;
+  border: none;
+
+  text-align: right;
+
+  &:not([readonly]) {
+    border-bottom: 1px solid #EEE;
+  }
+
+  &[type=number] {
+    max-width: 4em;
+  }
+}
